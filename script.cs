@@ -33,6 +33,7 @@ using var httpClient = new HttpClient();
 
 await Parallel.ForEachAsync(origin.Assets, async (asset, cancellationToken) =>
 {
+    Console.WriteLine($"Converting {asset.Name}...");
     using var stream = await httpClient.GetStreamAsync(asset.BrowserDownloadUrl, cancellationToken);
 
     using var memoryStream = new MemoryStream();
