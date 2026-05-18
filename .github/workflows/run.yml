@@ -1,0 +1,17 @@
+name: Run
+
+on:
+    workflow_dispatch:
+
+jobs:
+    run:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+        steps:
+            - uses: actions/checkout@v6.0.2
+            - uses: actions/setup-dotnet@v5.2.0
+            - run: dotnet run script.cs
+              env:
+                TOKEN: ${{ secrets.TOKEN }}
+              
