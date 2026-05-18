@@ -35,12 +35,16 @@ foreach (var asset in origin.Assets)
     Console.WriteLine($"Converting {asset.Name}...");
     using var stream = await httpClient.GetStreamAsync(asset.BrowserDownloadUrl);
 
+    using var memoryStream = new MemoryStream();
+    await stream.CopyToAsync(memoryStream);
+    memoryStream.Position = 0;
+
     await client.Repository.Release.UploadAsset(
         release,
         new ReleaseAssetUpload(
             asset.Name.Replace($"{version}-", "").Replace($"{version}_", ""),
             asset.ContentType,
-            stream,
+            memoryStream,
             null)
         );
 }
