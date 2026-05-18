@@ -30,13 +30,14 @@ var release = await client.Repository.Release.Create("yueyinqiu", "SingboxReleas
 
 var version = origin.TagName[1..];
 using var httpClient = new HttpClient();
-foreach (var asset in origin.Assets)
+
+await Parallel.ForEachAsync(origin.Assets, async (asset, cancellationToken) =>
 {
     Console.WriteLine($"Converting {asset.Name}...");
-    using var stream = await httpClient.GetStreamAsync(asset.BrowserDownloadUrl);
+    using var stream = await httpClient.GetStreamAsync(asset.BrowserDownloadUrl, cancellationToken);
 
     using var memoryStream = new MemoryStream();
-    await stream.CopyToAsync(memoryStream);
+    await stream.CopyToAsync(memoryStream, cancellationToken);
     memoryStream.Position = 0;
 
     await client.Repository.Release.UploadAsset(
@@ -45,9 +46,10 @@ foreach (var asset in origin.Assets)
             asset.Name.Replace($"{version}-", "").Replace($"{version}_", ""),
             asset.ContentType,
             memoryStream,
-            null)
-        );
-}
+            null
+        ),
+        cancellationToken);
+});
 
 Console.WriteLine($"Publishing release...");
 await client.Repository.Release.Edit("yueyinqiu", "SingboxReleasesMirrorWithVersionStrippedFromFilenames",
